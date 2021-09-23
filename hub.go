@@ -473,9 +473,9 @@ func (h *Hub) CountAny(name string, qp *dbflex.QueryParam) (int, error) {
 
 	var cmd dbflex.ICommand
 	if qp == nil || qp.Where == nil {
-		cmd = dbflex.From(name)
+		cmd = dbflex.From(name).Select()
 	} else {
-		cmd = dbflex.From(name).Where(qp.Where)
+		cmd = dbflex.From(name).Where(qp.Where).Select()
 	}
 	cur := conn.Cursor(cmd, nil)
 	if err = cur.Error(); err != nil {
@@ -576,6 +576,8 @@ func (h *Hub) PopulateByParm(tableName string, parm *dbflex.QueryParam, dest int
 	qry := dbflex.From(tableName)
 	if w := parm.Select; w != nil {
 		qry.Select(w...)
+	} else {
+		qry.Select()
 	}
 	if w := parm.Where; w != nil {
 		qry.Where(w)
