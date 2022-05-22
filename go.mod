@@ -1,6 +1,6 @@
 module github.com/ariefdarmawan/datahub
 
-go 1.15
+go 1.16
 
 require (
 	git.kanosolution.net/kano/dbflex v1.0.11

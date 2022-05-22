@@ -283,10 +283,14 @@ func (h *Hub) Save(data orm.DataModel, fields ...string) error {
 		}
 	} else {
 		w := data.GetFilterID(conn)
+		if err := orm.DataModel(data).PreSave(conn); err != nil {
+			return err
+		}
 		cmd := dbflex.From(data.TableName()).Where(w).Update(fields...)
 		if _, err := conn.Execute(cmd, toolkit.M{}.Set("data", data)); err != nil {
 			return err
 		}
+		orm.DataModel(data).PostSave(conn)
 	}
 
 	return nil
@@ -318,8 +322,12 @@ func (h *Hub) UpdateField(data orm.DataModel, where *dbflex.Filter, fields ...st
 	defer h.closeConn(idx, conn)
 
 	updatedFields := fields
+	if err := orm.DataModel(data).PreSave(conn); err != nil {
+		return err
+	}
 	cmd := dbflex.From(data.TableName()).Update(updatedFields...).Where(where)
 	conn.Execute(cmd, toolkit.M{}.Set("data", data))
+	orm.DataModel(data).PostSave(conn)
 	return nil
 }
 
