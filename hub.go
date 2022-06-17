@@ -8,7 +8,8 @@ import (
 	"git.kanosolution.net/kano/dbflex"
 	"git.kanosolution.net/kano/dbflex/orm"
 
-	"github.com/eaciit/toolkit"
+	"github.com/sebarcode/codekit"
+	"github.com/sebarcode/logger"
 )
 
 // Hub main datahub object. This object need to be initiated to work with datahub
@@ -20,7 +21,7 @@ type Hub struct {
 
 	poolItems []*dbflex.PoolItem
 	mtx       *sync.Mutex
-	_log      *toolkit.LogEngine
+	_log      *logger.LogEngine
 
 	txconn dbflex.IConnection
 }
@@ -91,15 +92,15 @@ func (h *Hub) SetOptions(opts *HubOptions) *Hub {
 }
 
 // Log get logger object
-func (h *Hub) Log() *toolkit.LogEngine {
+func (h *Hub) Log() *logger.LogEngine {
 	if h._log == nil {
-		h._log = toolkit.NewLogEngine(true, false, "", "", "")
+		h._log = logger.NewLogEngine(true, false, "", "", "")
 	}
 	return h._log
 }
 
 // SetLog set logger
-func (h *Hub) SetLog(l *toolkit.LogEngine) *Hub {
+func (h *Hub) SetLog(l *logger.LogEngine) *Hub {
 	h._log = l
 	if h.pool != nil {
 		h.pool.SetLog(l)
@@ -287,7 +288,7 @@ func (h *Hub) Save(data orm.DataModel, fields ...string) error {
 			return err
 		}
 		cmd := dbflex.From(data.TableName()).Where(w).Update(fields...)
-		if _, err := conn.Execute(cmd, toolkit.M{}.Set("data", data)); err != nil {
+		if _, err := conn.Execute(cmd, codekit.M{}.Set("data", data)); err != nil {
 			return err
 		}
 		orm.DataModel(data).PostSave(conn)
@@ -326,7 +327,7 @@ func (h *Hub) UpdateField(data orm.DataModel, where *dbflex.Filter, fields ...st
 		return err
 	}
 	cmd := dbflex.From(data.TableName()).Update(updatedFields...).Where(where)
-	conn.Execute(cmd, toolkit.M{}.Set("data", data))
+	conn.Execute(cmd, codekit.M{}.Set("data", data))
 	orm.DataModel(data).PostSave(conn)
 	return nil
 }
@@ -550,7 +551,7 @@ func (h *Hub) Execute(cmd dbflex.ICommand, object interface{}) (interface{}, err
 	}
 	defer h.closeConn(idx, conn)
 
-	parm := toolkit.M{}
+	parm := codekit.M{}
 	return conn.Execute(cmd, parm.Set("data", object))
 }
 
@@ -661,7 +662,7 @@ func (h *Hub) SaveAny(name string, object interface{}) error {
 	defer h.closeConn(idx, conn)
 
 	cmd := dbflex.From(name).Save()
-	if _, err = conn.Execute(cmd, toolkit.M{}.Set("data", object)); err != nil {
+	if _, err = conn.Execute(cmd, codekit.M{}.Set("data", object)); err != nil {
 		return fmt.Errorf("unable to save. %s", err.Error())
 	}
 	return nil
@@ -677,7 +678,7 @@ func (h *Hub) UpdateAny(name string, object interface{}, fields ...string) error
 	defer h.closeConn(idx, conn)
 
 	cmd := dbflex.From(name).Update(fields...)
-	if _, err = conn.Execute(cmd, toolkit.M{}.Set("data", object)); err != nil {
+	if _, err = conn.Execute(cmd, codekit.M{}.Set("data", object)); err != nil {
 		return fmt.Errorf("unable to save. %s", err.Error())
 	}
 	return nil
