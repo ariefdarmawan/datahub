@@ -333,7 +333,7 @@ func (h *Hub) UpdateField(data orm.DataModel, where *dbflex.Filter, fields ...st
 }
 
 // Update will update single data in database based on specific model
-func (h *Hub) Update(data orm.DataModel) error {
+func (h *Hub) Update(data orm.DataModel, fields ...string) error {
 	data.SetThis(data)
 	idx, conn, err := h.getConn()
 	if err != nil {
@@ -341,11 +341,25 @@ func (h *Hub) Update(data orm.DataModel) error {
 	}
 	defer h.closeConn(idx, conn)
 
-	if err = orm.Update(conn, data); err != nil {
-		return err
+	if len(fields) == 0 {
+		if err = orm.Update(conn, data); err != nil {
+			return err
+		}
+		return nil
 	}
 
-	return nil
+	var f *dbflex.Filter
+	fields, values := data.GetID(conn)
+	if len(fields) == 0 {
+		f = dbflex.Eq(fields[0], values[0])
+	} else {
+		fs := make([]*dbflex.Filter, len(fields))
+		for idx, name := range fields {
+			fs[idx] = dbflex.Eq(name, values[idx])
+		}
+		f = dbflex.And(fs...)
+	}
+	return h.UpdateField(data, f, fields...)
 }
 
 // Delete delete respective model record on database
@@ -692,6 +706,16 @@ func (h *Hub) EnsureTable(name string, keys []string, object interface{}) error 
 	}
 	defer h.CloseConnection(idx, conn)
 	return conn.EnsureTable(name, keys, object)
+}
+
+// EnsureIndex ensure index existence
+func (h *Hub) EnsureIndex(tableName, indexName string, unique bool, fields ...string) error {
+	idx, conn, e := h.GetConnection()
+	if e != nil {
+		return e
+	}
+	defer h.CloseConnection(idx, conn)
+	return conn.EnsureIndex(tableName, indexName, unique, fields...)
 }
 
 // Validate validate if a connection can be established
