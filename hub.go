@@ -718,6 +718,16 @@ func (h *Hub) EnsureIndex(tableName, indexName string, unique bool, fields ...st
 	return conn.EnsureIndex(tableName, indexName, unique, fields...)
 }
 
+// EnsureDb
+func (h *Hub) EnsureDb(obj orm.DataModel) error {
+	idx, conn, e := h.GetConnection()
+	if e != nil {
+		return e
+	}
+	defer h.CloseConnection(idx, conn)
+	return orm.EnsureDb(conn, obj)
+}
+
 // Validate validate if a connection can be established
 func (h *Hub) Validate() error {
 	idx, conn, e := h.GetConnection()
