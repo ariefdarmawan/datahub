@@ -1,6 +1,7 @@
 package datahub
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -362,7 +363,7 @@ func (h *Hub) Update(data orm.DataModel, fields ...string) error {
 	return h.UpdateField(data, f, fields...)
 }
 
-// Delete delete respective model record on database
+// Delete delete the active record on database
 func (h *Hub) Delete(data orm.DataModel) error {
 	data.SetThis(data)
 	idx, conn, err := h.getConn()
@@ -667,15 +668,34 @@ func (h *Hub) Close() {
 	}
 }
 
-// SaveAny save any object into database table. Normally used with no-datamodel object
-func (h *Hub) SaveAny(name string, object interface{}) error {
+// InsertAny insert any object into database table
+func (h *Hub) InsertAny(name string, object interface{}) error {
 	idx, conn, err := h.getConn()
 	if err != nil {
 		return fmt.Errorf("connection error. %s", err.Error())
 	}
 	defer h.closeConn(idx, conn)
 
-	cmd := dbflex.From(name).Save()
+	cmd := dbflex.From(name).Insert()
+	if _, err = conn.Execute(cmd, codekit.M{}.Set("data", object)); err != nil {
+		return fmt.Errorf("unable to save. %s", err.Error())
+	}
+	return nil
+}
+
+// SaveAny save any object into database table. Normally used with no-datamodel object
+func (h *Hub) SaveAny(name string, filter *dbflex.Filter, object interface{}) error {
+	idx, conn, err := h.getConn()
+	if err != nil {
+		return fmt.Errorf("connection error. %s", err.Error())
+	}
+	defer h.closeConn(idx, conn)
+
+	if filter == nil {
+		return errors.New("SaveAny should have valid filter")
+	}
+
+	cmd := dbflex.From(name).Where(filter).Save()
 	if _, err = conn.Execute(cmd, codekit.M{}.Set("data", object)); err != nil {
 		return fmt.Errorf("unable to save. %s", err.Error())
 	}
@@ -683,16 +703,39 @@ func (h *Hub) SaveAny(name string, object interface{}) error {
 }
 
 // UpdateAny update specific fields on database table. Normally used with no-datamodel object
-// Will be deprecated
-func (h *Hub) UpdateAny(name string, object interface{}, fields ...string) error {
+func (h *Hub) UpdateAny(name string, filter *dbflex.Filter, object interface{}, fields ...string) error {
 	idx, conn, err := h.getConn()
 	if err != nil {
 		return fmt.Errorf("connection error. %s", err.Error())
 	}
 	defer h.closeConn(idx, conn)
 
-	cmd := dbflex.From(name).Update(fields...)
+	if filter == nil {
+		return errors.New("UpdateAny should have filter")
+	}
+
+	cmd := dbflex.From(name).Where(filter).Update(fields...)
 	if _, err = conn.Execute(cmd, codekit.M{}.Set("data", object)); err != nil {
+		return fmt.Errorf("unable to save. %s", err.Error())
+	}
+	return nil
+}
+
+// DeleteAny delete record on database table. Normally used with no-datamodel object
+func (h *Hub) DeleteAny(name string, filter *dbflex.Filter) error {
+	idx, conn, err := h.getConn()
+	if err != nil {
+		return fmt.Errorf("connection error. %s", err.Error())
+	}
+	defer h.closeConn(idx, conn)
+
+	cmd := dbflex.From(name)
+	if filter != nil {
+		cmd.Where(filter)
+	}
+	cmd.Delete()
+
+	if _, err = conn.Execute(cmd, nil); err != nil {
 		return fmt.Errorf("unable to save. %s", err.Error())
 	}
 	return nil
