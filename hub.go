@@ -780,3 +780,27 @@ func (h *Hub) Validate() error {
 	defer h.CloseConnection(idx, conn)
 	return nil
 }
+
+func (h *Hub) GetByQuery(obj orm.DataModel, queryName string, param codekit.M) error {
+	if param == nil {
+		param = codekit.M{}
+	}
+	idx, conn, e := h.GetConnection()
+	if e != nil {
+		return e
+	}
+	defer h.CloseConnection(idx, conn)
+	return orm.GetQuery(conn, obj, queryName, param)
+}
+
+func (h *Hub) GetsByQuery(obj orm.DataModel, queryName string, param codekit.M, target interface{}) error {
+	if param == nil {
+		param = codekit.M{}
+	}
+	idx, conn, e := h.GetConnection()
+	if e != nil {
+		return e
+	}
+	defer h.CloseConnection(idx, conn)
+	return orm.GetsQuery(conn, obj, queryName, param, target)
+}
