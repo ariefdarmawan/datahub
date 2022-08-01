@@ -350,13 +350,13 @@ func (h *Hub) Update(data orm.DataModel, fields ...string) error {
 	}
 
 	var f *dbflex.Filter
-	fields, values := data.GetID(conn)
-	if len(fields) == 0 {
-		f = dbflex.Eq(fields[0], values[0])
+	idFields, idValues := data.GetID(conn)
+	if len(idFields) == 0 {
+		f = dbflex.Eq(idFields[0], idValues[0])
 	} else {
-		fs := make([]*dbflex.Filter, len(fields))
-		for idx, name := range fields {
-			fs[idx] = dbflex.Eq(name, values[idx])
+		fs := make([]*dbflex.Filter, len(idFields))
+		for idx, name := range idFields {
+			fs[idx] = dbflex.Eq(name, idValues[idx])
 		}
 		f = dbflex.And(fs...)
 	}
