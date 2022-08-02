@@ -1,5 +1,5 @@
-git.kanosolution.net/kano/dbflex v1.2.5-0.20220713052237-2829fbd208ef h1:EQBlgIiUF9ywpAPfzad0gdQ8dDE0sb/zSd33H62kQ88=
-git.kanosolution.net/kano/dbflex v1.2.5-0.20220713052237-2829fbd208ef/go.mod h1:FQZKWzBpYXNalY8syaXBjVBXyg58hIuUXQuIB08l7Zw=
+git.kanosolution.net/kano/dbflex v1.2.5 h1:NmyVT6ZNNkMNYfhVW8of/YfyF2E2KWNjY4XyFD8siy8=
+git.kanosolution.net/kano/dbflex v1.2.5/go.mod h1:FQZKWzBpYXNalY8syaXBjVBXyg58hIuUXQuIB08l7Zw=
 github.com/ariefdarmawan/reflector v0.0.3 h1:qbfwP5iKMvdYBWRG2jZyoXRLPsGedJ1sNcC8bw+MhpY=
 github.com/ariefdarmawan/reflector v0.0.3/go.mod h1:xxeY7n6iT0q5pK4j3s8l2xo1CvmQgS2oYtj0lsV4eo4=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

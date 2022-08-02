@@ -3,7 +3,7 @@ module github.com/ariefdarmawan/datahub
 go 1.16
 
 require (
-	git.kanosolution.net/kano/dbflex v1.2.5-0.20220713052237-2829fbd208ef
+	git.kanosolution.net/kano/dbflex v1.2.5
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/sebarcode/codekit v0.1.0
 	github.com/sebarcode/logger v0.1.1
