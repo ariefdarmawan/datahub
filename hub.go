@@ -28,10 +28,18 @@ type Hub struct {
 }
 
 func GeneralDbConnBuilder(txt string) func() (dbflex.IConnection, error) {
+	return GeneralDbConnBuilderWithTx(txt, false)
+}
+
+func GeneralDbConnBuilderWithTx(txt string, useTx bool) func() (dbflex.IConnection, error) {
 	return func() (dbflex.IConnection, error) {
 		conn, e := dbflex.NewConnectionFromURI(txt, nil)
 		if e != nil {
 			return nil, e
+		}
+
+		if !useTx {
+			conn.DisableTx(!useTx)
 		}
 
 		if e = conn.Connect(); e != nil {

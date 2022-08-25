@@ -13,10 +13,10 @@ func (h *Hub) BeginTx() (*Hub, error) {
 	}
 	if !conn.SupportTx() {
 		conn.Close()
-		return nil, fmt.Errorf("fail BeginTransaction: connection is not supporting transaction")
+		return h, fmt.Errorf("fail BeginTransaction: connection is not supporting transaction")
 	}
 	if e = conn.BeginTx(); e != nil {
-		return nil, fmt.Errorf("fail BeginTransaction: %s", e.Error())
+		return h, fmt.Errorf("fail BeginTransaction: %s", e.Error())
 	}
 
 	ht := new(Hub)
