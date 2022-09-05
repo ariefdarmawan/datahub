@@ -486,6 +486,13 @@ func (h *Hub) Gets(data orm.DataModel, parm *dbflex.QueryParam, dest interface{}
 	return nil
 }
 
+// GetsByFilter like gets but require only filter
+func (h *Hub) GetsByFilter(data orm.DataModel, filter *dbflex.Filter, dest interface{}) error {
+	qp := dbflex.NewQueryParam()
+	qp.SetWhere(filter)
+	return h.Gets(data, qp, dest)
+}
+
 // Count returns number of data based on model and filter
 func (h *Hub) Count(data orm.DataModel, qp *dbflex.QueryParam) (int, error) {
 	return h.CountAny(data.TableName(), qp)
