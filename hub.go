@@ -261,8 +261,13 @@ func (h *Hub) PoolSize() int {
 	return h.poolSize
 }
 
-// DeleteQuery delete object in database based on specific model and filter
+// DeleteQuery delete object in database based on specific model and filter, will be DEPRECATED use DeleteByFilter instead
 func (h *Hub) DeleteQuery(model orm.DataModel, where *dbflex.Filter) error {
+	return h.DeleteByFilter(model, where)
+}
+
+// DeleteByFilter delete object in database based on specific model and filter
+func (h *Hub) DeleteByFilter(model orm.DataModel, where *dbflex.Filter) error {
 	idx, conn, err := h.getConn()
 	if err != nil {
 		return fmt.Errorf("connection error. %s", err.Error())
@@ -496,6 +501,16 @@ func (h *Hub) GetsByFilter(data orm.DataModel, filter *dbflex.Filter, dest inter
 // Count returns number of data based on model and filter
 func (h *Hub) Count(data orm.DataModel, qp *dbflex.QueryParam) (int, error) {
 	return h.CountAny(data.TableName(), qp)
+}
+
+// CountByFilter returns number of data based on model and filter
+func (h *Hub) CountByFilter(data orm.DataModel, f *dbflex.Filter) (int, error) {
+	return h.CountAny(data.TableName(), dbflex.NewQueryParam().SetWhere(f))
+}
+
+// CountByAnyFilter returns number of data based on table name and filter
+func (h *Hub) CountAnyByFilter(name string, f *dbflex.Filter) (int, error) {
+	return h.CountAny(name, dbflex.NewQueryParam().SetWhere(f))
 }
 
 // CountAny returns number of data based on tablename and filter
