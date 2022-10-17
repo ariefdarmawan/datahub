@@ -540,7 +540,7 @@ func (h *Hub) CountAny(name string, qp *dbflex.QueryParam) (int, error) {
 }
 
 /* GetAnyByFilter returns single data based on filter enteered. Data need to be comply with orm.DataModel.
-Because no sort is defined, it will only 1st row by any given sort
+Because no sort is defined, it will only return 1st row by any given resultset
 If sort is needed pls use by ByParm
 */
 func (h *Hub) GetAnyByFilter(tableName string, filter *dbflex.Filter, dest interface{}) error {
