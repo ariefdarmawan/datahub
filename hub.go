@@ -120,12 +120,12 @@ func (h *Hub) SetLog(l *logger.LogEngine) *Hub {
 // GetConnection to generate connection. It will return index, connection and error. Index and connection need
 // to be retain for purpose of closing the connection. It is advised to use other DB operation related of Hub rather
 // than build manual connection
-func (h *Hub) GetConnection() (int, dbflex.IConnection, error) {
+func (h *Hub) GetConnection() (string, dbflex.IConnection, error) {
 	return h.getConn()
 }
 
 // CloseConnection to close connection
-func (h *Hub) CloseConnection(idx int, conn dbflex.IConnection) {
+func (h *Hub) CloseConnection(idx string, conn dbflex.IConnection) {
 	h.closeConn(idx, conn)
 }
 
@@ -134,9 +134,9 @@ func (h *Hub) GetClassicConnection() (dbflex.IConnection, error) {
 	return h.connFn()
 }
 
-func (h *Hub) getConnFromPool() (int, dbflex.IConnection, error) {
+func (h *Hub) getConnFromPool() (string, dbflex.IConnection, error) {
 	if h.txconn != nil {
-		return -1, h.txconn, nil
+		return "", h.txconn, nil
 	}
 
 	if h.poolSize == 0 {
@@ -156,11 +156,11 @@ func (h *Hub) getConnFromPool() (int, dbflex.IConnection, error) {
 
 	it, err := h.pool.Get()
 	if err != nil {
-		return -1, nil, fmt.Errorf("unable get connection from pool. %s", err.Error())
+		return "", nil, fmt.Errorf("unable get connection from pool. %s", err.Error())
 	}
 
 	conn := it.Connection()
-	idx := -1
+	idx := ""
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
@@ -192,7 +192,7 @@ func (h *Hub) SetAutoReleaseDuration(d time.Duration) *Hub {
 	return h
 }
 
-func (h *Hub) closeConn(idx int, conn dbflex.IConnection) {
+func (h *Hub) closeConn(idx string, conn dbflex.IConnection) {
 	if h.txconn != nil {
 		return
 	}
@@ -231,13 +231,13 @@ func (h *Hub) closeConn(idx int, conn dbflex.IConnection) {
 	*/
 }
 
-func (h *Hub) getConn() (int, dbflex.IConnection, error) {
+func (h *Hub) getConn() (string, dbflex.IConnection, error) {
 	if h.txconn != nil {
-		return -1, h.txconn, nil
+		return "", h.txconn, nil
 	}
 
 	if h.connFn == nil {
-		return -1, nil, fmt.Errorf("connection fn is not yet defined")
+		return "", nil, fmt.Errorf("connection fn is not yet defined")
 	}
 
 	if h.usePool {
@@ -246,9 +246,9 @@ func (h *Hub) getConn() (int, dbflex.IConnection, error) {
 
 	conn, err := h.connFn()
 	if err != nil {
-		return -1, nil, fmt.Errorf("unable to open connection. %s", err.Error())
+		return "", nil, fmt.Errorf("unable to open connection. %s", err.Error())
 	}
-	return -1, conn, nil
+	return "", conn, nil
 }
 
 // UsePool is a hub using pool
@@ -406,7 +406,9 @@ func (h *Hub) GetByAttr(data orm.DataModel, attr string, value interface{}) erro
 	return h.GetByParm(data, qp)
 }
 
-/* GetByFilter returns single data based on filter enteered. Data need to be comply with orm.DataModel.
+/*
+	GetByFilter returns single data based on filter enteered. Data need to be comply with orm.DataModel.
+
 Because no sort is defined, it will only 1st row by any given sort
 If sort is needed pls use by ByParm
 */
@@ -539,7 +541,9 @@ func (h *Hub) CountAny(name string, qp *dbflex.QueryParam) (int, error) {
 	return cur.Count(), nil
 }
 
-/* GetAnyByFilter returns single data based on filter enteered. Data need to be comply with orm.DataModel.
+/*
+	GetAnyByFilter returns single data based on filter enteered. Data need to be comply with orm.DataModel.
+
 Because no sort is defined, it will only return 1st row by any given resultset
 If sort is needed pls use by ByParm
 */

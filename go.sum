@@ -1,7 +1,5 @@
-git.kanosolution.net/kano/dbflex v1.2.5 h1:NmyVT6ZNNkMNYfhVW8of/YfyF2E2KWNjY4XyFD8siy8=
-git.kanosolution.net/kano/dbflex v1.2.5/go.mod h1:FQZKWzBpYXNalY8syaXBjVBXyg58hIuUXQuIB08l7Zw=
-git.kanosolution.net/kano/dbflex v1.2.6-0.20220823025112-62569b2edf2d h1:F3e9lFO4rxdEH6eGd6I231BT/VKaIBU4YcaAzkMYQfE=
-git.kanosolution.net/kano/dbflex v1.2.6-0.20220823025112-62569b2edf2d/go.mod h1:FQZKWzBpYXNalY8syaXBjVBXyg58hIuUXQuIB08l7Zw=
+git.kanosolution.net/kano/dbflex v1.3.1 h1:tCSrKT9oA+ZJ4wOjjFQN5h+2NE/4re4fas1vsBZnPwA=
+git.kanosolution.net/kano/dbflex v1.3.1/go.mod h1:mqgrdJe4IIfuLOMf1qj5kJUkL2ckiQ3XcA8LFQfE9k4=
 github.com/ariefdarmawan/reflector v0.0.3 h1:qbfwP5iKMvdYBWRG2jZyoXRLPsGedJ1sNcC8bw+MhpY=
 github.com/ariefdarmawan/reflector v0.0.3/go.mod h1:xxeY7n6iT0q5pK4j3s8l2xo1CvmQgS2oYtj0lsV4eo4=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -10,6 +8,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/eaciit/toolkit v0.0.0-20210610161449-593d5fadf78e h1:2/wdIW25ZaPHfKQ5HvQUSAqeH9KAZQH1PlCMnrSJ9xE=
 github.com/eaciit/toolkit v0.0.0-20210610161449-593d5fadf78e/go.mod h1:r4OKDNGrY6n6gCVqEFdld+JTfgdNgp78RPvZHr2B9jU=
 github.com/gofrs/flock v0.8.1/go.mod h1:F1TvTiK9OcQqauNUHlbJvyl9Qa1QvF/gOUDKA14jxHU=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 h1:EGx4pi6eqNxGaHF6qqu48+N2wcFQ5qg5FXgOdqsJ5d8=
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/jtolds/gls v4.20.0+incompatible h1:xdiiI2gbIgH/gLH7ADydsJ1uDOEzR8yvV7C0MuV77Wo=
