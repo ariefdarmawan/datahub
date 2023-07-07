@@ -213,22 +213,6 @@ func (h *Hub) closeConn(idx string, conn dbflex.IConnection) {
 			break
 		}
 	}
-
-	/*
-		if idx < len(h.poolItems) && idx != -1 {
-			itemCount := len(h.poolItems)
-			h.poolItems[idx].Release()
-			if itemCount == 0 {
-				h.poolItems = []*dbflex.PoolItem{}
-			} else if idx == 0 {
-				h.poolItems = h.poolItems[1:]
-			} else if idx == len(h.poolItems)-1 {
-				h.poolItems = h.poolItems[:idx]
-			} else {
-				h.poolItems = append(h.poolItems[:idx], h.poolItems[idx+1:]...)
-			}
-		}
-	*/
 }
 
 func (h *Hub) getConn() (string, dbflex.IConnection, error) {
