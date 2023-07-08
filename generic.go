@@ -61,3 +61,28 @@ func FindByCommand[T orm.DataModel](h *Hub, data T, cmd dbflex.ICommand) ([]T, e
 func Count[T orm.DataModel](h *Hub, data T, qp *dbflex.QueryParam) (int, error) {
 	return h.Count(data, qp)
 }
+
+// FindAnyByCommand returns all data using dbflex command
+func FindAnyByCommand[T any](h *Hub, model T, cmd dbflex.ICommand) ([]T, error) {
+	dest := []T{}
+	_, err := h.Populate(cmd, &dest)
+	return dest, err
+}
+
+func FindAnyByParm[T any](h *Hub, model T, tablename string, qp *dbflex.QueryParam) ([]T, error) {
+	dest := []T{}
+	err := h.PopulateByParm(tablename, qp, &dest)
+	return dest, err
+}
+
+func FindAnyByFilter[T any](h *Hub, model T, tablename string, filter *dbflex.Filter, n int) ([]T, error) {
+	dest := []T{}
+	err := h.PopulateByFilter(tablename, filter, n, &dest)
+	return dest, err
+}
+
+func FindAnyBySQL[T any](h *Hub, model T, sql string) ([]T, error) {
+	dest := []T{}
+	err := h.PopulateSQL(sql, &dest)
+	return dest, err
+}
