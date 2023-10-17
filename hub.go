@@ -3,6 +3,7 @@ package datahub
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"sync"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"git.kanosolution.net/kano/dbflex/orm"
 
 	"github.com/sebarcode/codekit"
+	"github.com/sebarcode/kiva"
 	"github.com/sebarcode/logger"
 )
 
@@ -19,6 +21,9 @@ type Hub struct {
 	usePool  bool
 	pool     *dbflex.DbPooling
 	poolSize int
+
+	useCache      bool
+	cacheProvider kiva.MemoryProvider
 
 	poolItems []*dbflex.PoolItem
 	mtx       *sync.Mutex
@@ -269,6 +274,7 @@ func (h *Hub) DeleteByFilter(model orm.DataModel, where *dbflex.Filter) error {
 // Save will save data into database, if fields is activated it will save the mentioned fields only,
 // fields will only work with update hence it will assume record already exist
 func (h *Hub) Save(data orm.DataModel, fields ...string) error {
+	objID := getID(data)
 	data.SetThis(data)
 	idx, conn, err := h.getConn()
 	if err != nil {
@@ -292,6 +298,10 @@ func (h *Hub) Save(data orm.DataModel, fields ...string) error {
 		orm.DataModel(data).PostSave(conn)
 	}
 
+	if h.useCache && h.cacheProvider != nil && getFieldCacheSetup(data.TableName(), data) != nil {
+		h.cacheProvider.Set(data.TableName(), objID, data, nil)
+	}
+
 	return nil
 }
 
@@ -306,6 +316,10 @@ func (h *Hub) Insert(data orm.DataModel) error {
 
 	if err = orm.Insert(conn, data); err != nil {
 		return err
+	}
+
+	if h.useCache && h.cacheProvider != nil && getFieldCacheSetup(data.TableName(), data) != nil {
+		h.cacheProvider.Set(data.TableName(), getID(data), data, nil)
 	}
 
 	return nil
@@ -327,11 +341,14 @@ func (h *Hub) UpdateField(data orm.DataModel, where *dbflex.Filter, fields ...st
 	cmd := dbflex.From(data.TableName()).Update(updatedFields...).Where(where)
 	conn.Execute(cmd, codekit.M{}.Set("data", data))
 	orm.DataModel(data).PostSave(conn)
+
 	return nil
 }
 
 // Update will update single data in database based on specific model
 func (h *Hub) Update(data orm.DataModel, fields ...string) error {
+	objID := getID(data)
+
 	data.SetThis(data)
 	idx, conn, err := h.getConn()
 	if err != nil {
@@ -357,11 +374,35 @@ func (h *Hub) Update(data orm.DataModel, fields ...string) error {
 		}
 		f = dbflex.And(fs...)
 	}
-	return h.UpdateField(data, f, fields...)
+	err = h.UpdateField(data, f, fields...)
+	if err != nil {
+		return err
+	}
+
+	if h.useCache && h.cacheProvider != nil && getFieldCacheSetup(data.TableName(), data) != nil {
+		// because no fields specifieds, means all update, we can set cache
+		if len(fields) == 0 {
+			h.cacheProvider.Set(data.TableName(), objID, data, nil)
+			return nil
+		}
+
+		// fields update specified, we need to pull all object to pull all object and cache it
+		obj, ok := reflect.New(reflect.TypeOf(data).Elem()).Interface().(orm.DataModel) // make new objevt with same type
+		if !ok {
+			return nil
+		}
+		obj.SetID(getID(data))
+		if e := h.GetByID(obj); e == nil {
+			h.cacheProvider.Set(data.TableName(), objID, obj, nil)
+		}
+	}
+
+	return nil
 }
 
 // Delete delete the active record on database
 func (h *Hub) Delete(data orm.DataModel) error {
+	objID := getID(data)
 	data.SetThis(data)
 	idx, conn, err := h.getConn()
 	if err != nil {
@@ -371,6 +412,10 @@ func (h *Hub) Delete(data orm.DataModel) error {
 
 	if err = orm.Delete(conn, data); err != nil {
 		return err
+	}
+
+	if h.useCache && h.cacheProvider != nil && getFieldCacheSetup(data.TableName(), data) != nil {
+		h.cacheProvider.Delete(data.TableName(), objID)
 	}
 
 	return nil
@@ -445,6 +490,14 @@ func (h *Hub) GetByParm(data orm.DataModel, parm *dbflex.QueryParam) error {
 // Get return single data based on model. It will find record based on releant ID field
 func (h *Hub) Get(data orm.DataModel) error {
 	data.SetThis(data)
+
+	if h.useCache && h.cacheProvider != nil && getFieldCacheSetup(data.TableName(), data) != nil {
+		//if e := h.cacheKv.Get(fmt.Sprintf("%s:%s", data.TableName(), getId(data)), data); e != nil {
+		if _, e := h.cacheProvider.Get(data.TableName(), getID(data), data); e != nil {
+			return nil
+		}
+	}
+
 	idx, conn, err := h.getConn()
 	if err != nil {
 		return fmt.Errorf("connection error. %s", err.Error())
