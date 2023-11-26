@@ -3,6 +3,7 @@ package datahub
 import (
 	"errors"
 	"fmt"
+	"io"
 	"reflect"
 	"sync"
 	"time"
@@ -226,7 +227,7 @@ func (h *Hub) getConn() (string, dbflex.IConnection, error) {
 	}
 
 	if h.connFn == nil {
-		return "", nil, fmt.Errorf("connection fn is not yet defined")
+		return "", nil, fmt.Errorf("function to generate connection is not yet defined")
 	}
 
 	if h.usePool {
@@ -298,8 +299,8 @@ func (h *Hub) Save(data orm.DataModel, fields ...string) error {
 		orm.DataModel(data).PostSave(conn)
 	}
 
-	if h.useCache && h.cacheProvider != nil && getFieldCacheSetup(data.TableName(), data) != nil {
-		h.cacheProvider.Set(data.TableName(), objID, data, nil)
+	if h.useCache && h.cacheProvider != nil && getObjectCacheSetup(data.TableName(), data) != nil {
+		h.cacheProvider.Set(data.TableName(), objID, data)
 	}
 
 	return nil
@@ -318,8 +319,8 @@ func (h *Hub) Insert(data orm.DataModel) error {
 		return err
 	}
 
-	if h.useCache && h.cacheProvider != nil && getFieldCacheSetup(data.TableName(), data) != nil {
-		h.cacheProvider.Set(data.TableName(), getID(data), data, nil)
+	if h.useCache && h.cacheProvider != nil && getObjectCacheSetup(data.TableName(), data) != nil {
+		h.cacheProvider.Set(data.TableName(), getID(data), data)
 	}
 
 	return nil
@@ -379,10 +380,10 @@ func (h *Hub) Update(data orm.DataModel, fields ...string) error {
 		return err
 	}
 
-	if h.useCache && h.cacheProvider != nil && getFieldCacheSetup(data.TableName(), data) != nil {
+	if h.useCache && h.cacheProvider != nil && getObjectCacheSetup(data.TableName(), data) != nil {
 		// because no fields specifieds, means all update, we can set cache
 		if len(fields) == 0 {
-			h.cacheProvider.Set(data.TableName(), objID, data, nil)
+			h.cacheProvider.Set(data.TableName(), objID, data)
 			return nil
 		}
 
@@ -393,7 +394,7 @@ func (h *Hub) Update(data orm.DataModel, fields ...string) error {
 		}
 		obj.SetID(getID(data))
 		if e := h.GetByID(obj); e == nil {
-			h.cacheProvider.Set(data.TableName(), objID, obj, nil)
+			h.cacheProvider.Set(data.TableName(), objID, obj)
 		}
 	}
 
@@ -414,7 +415,7 @@ func (h *Hub) Delete(data orm.DataModel) error {
 		return err
 	}
 
-	if h.useCache && h.cacheProvider != nil && getFieldCacheSetup(data.TableName(), data) != nil {
+	if h.useCache && h.cacheProvider != nil && getObjectCacheSetup(data.TableName(), data) != nil {
 		h.cacheProvider.Delete(data.TableName(), objID)
 	}
 
@@ -438,7 +439,7 @@ func (h *Hub) GetByAttr(data orm.DataModel, attr string, value interface{}) erro
 /*
 	GetByFilter returns single data based on filter enteered. Data need to be comply with orm.DataModel.
 
-Because no sort is defined, it will only 1st row by any given sort
+Because no sort is defined, it will only yield 1st row by any given sort
 If sort is needed pls use by ByParm
 */
 func (h *Hub) GetByFilter(data orm.DataModel, filter *dbflex.Filter) error {
@@ -487,14 +488,22 @@ func (h *Hub) GetByParm(data orm.DataModel, parm *dbflex.QueryParam) error {
 	return nil
 }
 
+func (h *Hub) isObjectUseCache(data orm.DataModel) bool {
+	return h.useCache && h.cacheProvider != nil && getObjectCacheSetup(data.TableName(), data) != nil
+}
+
 // Get return single data based on model. It will find record based on releant ID field
 func (h *Hub) Get(data orm.DataModel) error {
 	data.SetThis(data)
 
-	if h.useCache && h.cacheProvider != nil && getFieldCacheSetup(data.TableName(), data) != nil {
-		//if e := h.cacheKv.Get(fmt.Sprintf("%s:%s", data.TableName(), getId(data)), data); e != nil {
-		if _, e := h.cacheProvider.Get(data.TableName(), getID(data), data); e != nil {
+	tableName := data.TableName()
+	id := getID(data)
+	if h.isObjectUseCache(data) {
+		// get data from memory provider, if data is not there and EOF returned then get from db, but if EOF, yield the error
+		if _, e := h.cacheProvider.Get(tableName, id, data); e == nil {
 			return nil
+		} else if e != io.EOF {
+			return fmt.Errorf("cache issue. %s", e.Error())
 		}
 	}
 
@@ -506,6 +515,10 @@ func (h *Hub) Get(data orm.DataModel) error {
 
 	if err = orm.Get(conn, data); err != nil {
 		return err
+	}
+
+	if h.isObjectUseCache(data) {
+		h.cacheProvider.Set(tableName, id, data)
 	}
 
 	return nil

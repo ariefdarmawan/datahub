@@ -23,6 +23,8 @@ github.com/sebarcode/codekit v0.1.4 h1:k/GS7qjDSbRD1fmo02LgGrD1ab7m21zAs/eqm7tIX
 github.com/sebarcode/codekit v0.1.4/go.mod h1:CNHNFOALfsqgDmu+GIFSo4RAoCsECBCS84RmHbqj88I=
 github.com/sebarcode/kiva v0.1.1-0.20231016042605-2eec2a1c368a h1:JIdJJALTttB3fDwUmJ9LOctjj7406ggYgWgAO8wOfW8=
 github.com/sebarcode/kiva v0.1.1-0.20231016042605-2eec2a1c368a/go.mod h1:5tvyXAfRrHF2lmatjsHQUF712cI0K+gKFNpO9STXoB8=
+github.com/sebarcode/kiva v0.1.1-0.20231125164402-56638605c1f8 h1:n8qqUzd8OaU0Py5gkNKVseBKHp68K1g+h1WfqA/gCdE=
+github.com/sebarcode/kiva v0.1.1-0.20231125164402-56638605c1f8/go.mod h1:cmXPIhjMHL6xmSiMlS+gpYLZtZZr6pn/TKe9sHEuYOY=
 github.com/sebarcode/logger v0.1.1 h1:qy8Ip5UacaK4LFE0hN/HXUCIu3ZBe4uta8WHQ067jfQ=
 github.com/sebarcode/logger v0.1.1/go.mod h1:dBcREBmgQLUN1kAAs5t9y7dN5RUp+OYEsk4rqUWuM5Q=
 github.com/smarty/assertions v1.15.0 h1:cR//PqUBUiQRakZWqBiFFQ9wb8emQGDb0HeGdqGByCY=

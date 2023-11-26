@@ -12,7 +12,7 @@ var (
 	fcss = map[string]*kiva.CacheOptions{}
 )
 
-func SetFieldCache(name string, obj interface{}) error {
+func SetObjectCache(name string, obj interface{}) error {
 	if obj == nil {
 		return errors.New("object is nil")
 	}
@@ -36,24 +36,24 @@ func SetFieldCache(name string, obj interface{}) error {
 	return nil
 }
 
-func getFieldCacheSetup(name string, obj interface{}) *kiva.CacheOptions {
+func getObjectCacheSetup(name string, obj interface{}) *kiva.CacheOptions {
 	fcs, ok := fcss[name]
 	if ok {
 		return fcs
 	}
 
-	e := SetFieldCache(name, obj)
+	e := SetObjectCache(name, obj)
 	if e != nil {
 		return nil
 	}
-	return getFieldCacheSetup(name, obj)
+	return getObjectCacheSetup(name, obj)
 }
 
-type CacheOpts struct {
+type InMemOpts struct {
 	Provider kiva.MemoryProvider
 }
 
-func (h *Hub) Cache(opts *CacheOpts) *Hub {
+func (h *Hub) Cache(opts *InMemOpts) *Hub {
 	if opts == nil {
 		h.useCache = false
 		h.cacheProvider = nil

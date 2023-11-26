@@ -5,7 +5,7 @@ go 1.19
 require (
 	git.kanosolution.net/kano/dbflex v1.3.1
 	github.com/sebarcode/codekit v0.1.4
-	github.com/sebarcode/kiva v0.1.1-0.20231016042605-2eec2a1c368a
+	github.com/sebarcode/kiva v0.1.1-0.20231125164402-56638605c1f8
 	github.com/sebarcode/logger v0.1.1
 )
 
