@@ -1,6 +1,8 @@
 package datahub
 
 import (
+	"fmt"
+
 	"git.kanosolution.net/kano/dbflex"
 	"git.kanosolution.net/kano/dbflex/orm"
 	"github.com/sebarcode/codekit"
@@ -9,6 +11,12 @@ import (
 // Get return single data, generic mode
 func Get[T orm.DataModel](h *Hub, model T) (T, error) {
 	err := h.Get(model)
+	return model, err
+}
+
+// GetWithoutCache return single data ignoring cache, generic mode
+func GetWithoutCache[T orm.DataModel](h *Hub, model T) (T, error) {
+	err := h.GetWithoutCache(model)
 	return model, err
 }
 
@@ -33,6 +41,13 @@ func GetByQuery[T orm.DataModel](h *Hub, model T, queryName string, payload code
 // GetByID return first record by theirs ID
 func GetByID[T orm.DataModel](h *Hub, model T, ids ...interface{}) (T, error) {
 	err := h.GetByID(model, ids...)
+	return model, err
+}
+
+// GetByIDWithoutCache return first record by theirs ID, ignoring cache
+func GetByIDWithoutCache[T orm.DataModel](h *Hub, model T, ids ...interface{}) (T, error) {
+	model.SetID(ids...)
+	err := h.GetWithoutCache(model)
 	return model, err
 }
 
@@ -85,4 +100,73 @@ func FindAnyBySQL[T any](h *Hub, model T, sql string) ([]T, error) {
 	dest := []T{}
 	err := h.PopulateSQL(sql, &dest)
 	return dest, err
+}
+
+// Save
+func Save(db *Hub, records ...orm.DataModel) error {
+	for _, r := range records {
+		if e := db.Insert(r); e != nil {
+			_, ids := r.GetID(nil)
+			return fmt.Errorf("save %s: %v: %s", r.TableName(), ids, e.Error())
+		}
+	}
+
+	return nil
+}
+
+// Insert
+func Insert(db *Hub, records ...orm.DataModel) error {
+	for _, r := range records {
+		if e := db.Insert(r); e != nil {
+			_, ids := r.GetID(nil)
+			return fmt.Errorf("insert %s: %v: %s", r.TableName(), ids, e.Error())
+		}
+	}
+
+	return nil
+}
+
+// Update
+func Update(db *Hub, records ...orm.DataModel) error {
+	for _, r := range records {
+		if e := db.Update(r); e != nil {
+			_, ids := r.GetID(nil)
+			return fmt.Errorf("update %s: %v: %s", r.TableName(), ids, e.Error())
+		}
+	}
+
+	return nil
+}
+
+// UpdateFields
+func UpdateFields(db *Hub, fields []string, records ...orm.DataModel) error {
+	for _, r := range records {
+		if e := db.Update(r, fields...); e != nil {
+			_, ids := r.GetID(nil)
+			return fmt.Errorf("update %s: %v: %s", r.TableName(), ids, e.Error())
+		}
+	}
+	return nil
+}
+
+// TxDone to commit or rollback based on error. It will raise error if the db object is not tx support
+func TxDone(db *Hub, err error, ignoreTxSupport bool) error {
+	if !db.IsTx() {
+		if !ignoreTxSupport {
+			return fmt.Errorf("IsNotTx")
+		}
+		return nil
+	}
+
+	if err != nil {
+		if err := db.Rollback(); err != nil {
+			return fmt.Errorf("rollback fail: %s", err.Error())
+		}
+	}
+
+	if err := db.Commit(); err != nil {
+		return fmt.Errorf("commit fail: %s", err.Error())
+	}
+
+	return nil
 }

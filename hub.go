@@ -524,6 +524,29 @@ func (h *Hub) Get(data orm.DataModel) error {
 	return nil
 }
 
+// GetWithoutCache return single data based on model, ignoring cache. It will find record based on relevant ID field
+func (h *Hub) GetWithoutCache(data orm.DataModel) error {
+	data.SetThis(data)
+
+	idx, conn, err := h.getConn()
+	if err != nil {
+		return fmt.Errorf("connection error. %s", err.Error())
+	}
+	defer h.closeConn(idx, conn)
+
+	if err = orm.Get(conn, data); err != nil {
+		return err
+	}
+
+	if h.isObjectUseCache(data) {
+		tableName := data.TableName()
+		id := getID(data)
+		h.cacheProvider.Set(tableName, id, data)
+	}
+
+	return nil
+}
+
 // Gets return all data based on model and filter
 func (h *Hub) Gets(data orm.DataModel, parm *dbflex.QueryParam, dest interface{}) error {
 	if parm == nil {
