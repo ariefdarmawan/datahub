@@ -3,6 +3,7 @@ package datahub
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 // BeginTx create a hub with Transaction. Commit and/or Rollback need to call later on to close the transaction
@@ -59,9 +60,33 @@ func (h *Hub) Rollback() error {
 	return nil
 }
 
+// isTx identify is a hub has transaction or not
 func (h *Hub) IsTx() bool {
 	if h.txconn != nil {
 		return h.txconn.IsTx()
 	}
 	return false
+}
+
+func PrepareTx(h *Hub) (*Hub, func(*Hub, error), error) {
+	htx, err := h.BeginTx()
+	if err != nil && !strings.Contains(err.Error(), "not supporting transaction") {
+		return nil, nil, err
+	}
+
+	return htx, func(h *Hub, err error) {
+		if r := recover(); r != nil && h != nil {
+			h.Rollback()
+			return
+		}
+
+		if err != nil && h != nil {
+			h.Rollback()
+			return
+		}
+
+		if h != nil {
+			h.Commit()
+		}
+	}, nil
 }
