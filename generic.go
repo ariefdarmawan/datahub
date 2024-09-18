@@ -24,6 +24,12 @@ func GetByParm[T orm.DataModel](h *Hub, model T, qp *dbflex.QueryParam) (T, erro
 	return model, err
 }
 
+// GetByParmEl return first record by param element
+func GetByParmEl[T orm.DataModel](h *Hub, model T, where *dbflex.Filter, order string, fields ...string) (T, error) {
+	err := h.GetByParmEl(model, model, where, order, fields...)
+	return model, err
+}
+
 // GetByQuery return first record by query
 func GetByQuery[T orm.DataModel](h *Hub, model T, queryName string, payload codekit.M) (T, error) {
 	err := h.GetByQuery(model, queryName, payload)

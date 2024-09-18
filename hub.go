@@ -458,6 +458,11 @@ func (h *Hub) Get(data orm.DataModel) error {
 	return nil
 }
 
+// GetByParmEl return data by parm element
+func (h *Hub) GetByParmEl(data orm.DataModel, dest interface{}, where *dbflex.Filter, order string, fields ...string) error {
+	return h.GetAnyByParmEl(data.TableName(), dest, where, order, fields...)
+}
+
 // Gets return all data based on model and filter
 func (h *Hub) Gets(data orm.DataModel, parm *dbflex.QueryParam, dest interface{}) error {
 	if parm == nil {
@@ -525,8 +530,24 @@ func (h *Hub) CountAny(name string, qp *dbflex.QueryParam) (int, error) {
 	return cur.Count(), nil
 }
 
+// GetAnyByParmEl return data by parm element
+func (h *Hub) GetAnyByParmEl(tablename string, dest interface{}, where *dbflex.Filter, order string, fields ...string) error {
+	qp := dbflex.NewQueryParam().SetTake(1)
+	if where != nil {
+		qp.SetWhere(where)
+	}
+	if order != "" {
+		qp.SetSort(order)
+	}
+	if len(fields) > 0 {
+		qp.SetSelect(fields...)
+	}
+
+	return h.GetAnyByParm(tablename, qp, dest)
+}
+
 /*
-	GetAnyByFilter returns single data based on filter enteered. Data need to be comply with orm.DataModel.
+GetAnyByFilter returns single data based on filter enteered. Data need to be comply with orm.DataModel.
 
 Because no sort is defined, it will only return 1st row by any given resultset
 If sort is needed pls use by ByParm
