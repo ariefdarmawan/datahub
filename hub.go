@@ -150,7 +150,7 @@ func (h *Hub) getConnFromPool() (string, dbflex.IConnection, error) {
 	if h.pool == nil {
 		h.pool = dbflex.NewDbPooling(h.poolSize, h.connFn).SetLog(h.Log())
 		h.pool.Timeout = 90 * time.Second
-		h.pool.AutoClose = 5 * time.Second
+		h.pool.AutoClose = 8 * time.Second
 		//h.pool.AutoRelease = 3 * time.Second
 	}
 
@@ -167,6 +167,16 @@ func (h *Hub) getConnFromPool() (string, dbflex.IConnection, error) {
 	h.poolItems = append(h.poolItems, it)
 	idx = it.ID
 	return idx, conn, nil
+}
+
+func (h *Hub) SetTimeout(d time.Duration) *Hub {
+	if h.usePool {
+		if h.pool == nil {
+			h.pool = dbflex.NewDbPooling(h.poolSize, h.connFn)
+		}
+		h.pool.Timeout = d
+	}
+	return h
 }
 
 // SetAutoCloseDuration set duration for a connection inside Hub Pool to be closed if it is not being used
@@ -186,7 +196,9 @@ func (h *Hub) SetAutoReleaseDuration(d time.Duration) *Hub {
 		if h.pool == nil {
 			h.pool = dbflex.NewDbPooling(h.poolSize, h.connFn)
 		}
-		h.pool.Timeout = d + time.Duration(5*time.Second)
+		if int(h.pool.Timeout) == 0 {
+			h.pool.Timeout = d + time.Duration(5*time.Second)
+		}
 		h.pool.AutoRelease = d
 	}
 	return h
