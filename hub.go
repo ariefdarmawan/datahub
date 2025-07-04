@@ -129,6 +129,29 @@ func (h *Hub) CloseConnection(idx string, conn dbflex.IConnection) {
 	h.closeConn(idx, conn)
 }
 
+// ForceCloseConnection to close connection without checking if it is in transaction
+func (h *Hub) ForceCloseConnection(idx string, conn dbflex.IConnection) {
+	if conn == nil {
+		return
+	}
+
+	if h.txconn != nil && h.txconn == conn {
+		h.txconn = nil
+	}
+
+	if !h.usePool {
+		conn.Close()
+		return
+	}
+
+	conn.Close()
+	for _, it := range h.poolItems {
+		if it.ID == idx {
+			it.Release()
+		}
+	}
+}
+
 // GetClassicConnection get connection without using pool. CleanUp operation need to be done manually
 func (h *Hub) GetClassicConnection() (dbflex.IConnection, error) {
 	return h.connFn()
