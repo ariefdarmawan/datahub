@@ -144,9 +144,9 @@ func (h *Hub) ForceCloseConnection(idx string, conn dbflex.IConnection) {
 		return
 	}
 
+	conn.Close()
 	for _, it := range h.poolItems {
 		if it.ID == idx {
-			it.Connection().Close()
 			it.Release()
 		}
 	}
